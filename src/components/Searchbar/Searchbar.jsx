@@ -7,7 +7,7 @@ const schema = Yup.object({
   title: Yup.string()
     .min(2)
     .matches(
-      /^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/,
+      /^[a-zA-Zа-яА-Я0-9]+(([' -][a-zA-Zа-яА-Я0-9 ])?[a-zA-Zа-яА-Я0-9]*)*$/,
       'Please enter a valid title'
     )
     .max(18)
