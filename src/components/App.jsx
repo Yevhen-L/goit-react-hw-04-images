@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getImage } from './ServicesApi/Api';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
@@ -19,9 +19,6 @@ export const App = () => {
     modalImageUrl: '',
   });
 
-  const prevSearchQuery = usePrevious(searchQuery);
-  const prevPage = usePrevious(page);
-
   const handleSearch = query => {
     setSearchQuery(query);
     setPage(1);
@@ -30,33 +27,26 @@ export const App = () => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const fetchAllImages = async () => {
-        setIsLoading(true);
+    const fetchAllImages = async () => {
+      setIsLoading(true);
 
-        try {
-          const data = await getImage(searchQuery, page);
-          if (!data.hits.length) return;
+      try {
+        const data = await getImage(searchQuery, page);
+        if (!data.hits.length) return;
 
-          setImages(prevImages => [...prevImages, ...data.hits]);
-          setTotalImages(data.totalHits);
-        } catch (error) {
-          setError(error.message);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      if (
-        searchQuery &&
-        (searchQuery !== prevSearchQuery || page !== prevPage)
-      ) {
-        await fetchAllImages();
+        setImages(prevImages => [...prevImages, ...data.hits]);
+        setTotalImages(data.totalHits);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchData();
-  }, [searchQuery, prevSearchQuery, page, prevPage]);
+    if (searchQuery) {
+      fetchAllImages();
+    }
+  }, [searchQuery, page]);
 
   const openModal = imageUrl => {
     setModal({
@@ -95,11 +85,3 @@ export const App = () => {
     </StyledAppContainer>
   );
 };
-
-function usePrevious(value) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
