@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { Form } from 'formik';
+
 export const StyledHeader = styled.header`
   top: 0;
   left: 0;

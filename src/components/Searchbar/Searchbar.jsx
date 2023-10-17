@@ -13,8 +13,9 @@ const SearchbarSchema = Yup.object().shape({
     .max(18, 'Title is too long')
     .required('Title is required'),
 });
+
 export const Searchbar = ({ onSearch }) => {
-  const [initialValues, setInitialValues] = useState({ title: '' });
+  const [initialValues] = useState({ title: '' });
 
   const handleSubmit = (values, actions) => {
     onSearch(values.title);

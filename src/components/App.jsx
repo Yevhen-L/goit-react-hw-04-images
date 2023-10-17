@@ -6,6 +6,7 @@ import { Loader } from './Loader/Loader';
 import { Modal } from './Modal/Modal';
 import { Button } from './Button/Button';
 import { StyledAppContainer } from './App.styled';
+
 export const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [images, setImages] = useState([]);
@@ -28,24 +29,24 @@ export const App = () => {
     setTotalImages(0);
   };
 
-  const fetchAllImages = async () => {
-    setIsLoading(true);
-
-    try {
-      const data = await getImage(searchQuery, page);
-      if (!data.hits.length) return;
-
-      setImages(prevImages => [...prevImages, ...data.hits]);
-      setTotalImages(data.totalHits);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
     const fetchData = async () => {
+      const fetchAllImages = async () => {
+        setIsLoading(true);
+
+        try {
+          const data = await getImage(searchQuery, page);
+          if (!data.hits.length) return;
+
+          setImages(prevImages => [...prevImages, ...data.hits]);
+          setTotalImages(data.totalHits);
+        } catch (error) {
+          setError(error.message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
       if (
         searchQuery &&
         (searchQuery !== prevSearchQuery || page !== prevPage)
