@@ -6,7 +6,6 @@ import { Loader } from './Loader/Loader';
 import { Modal } from './Modal/Modal';
 import { Button } from './Button/Button';
 import { StyledAppContainer } from './App.styled';
-
 export const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [images, setImages] = useState([]);
@@ -96,7 +95,6 @@ export const App = () => {
   );
 };
 
-// Користувацька функція, що повертає попереднє значення
 function usePrevious(value) {
   const ref = useRef();
   useEffect(() => {
