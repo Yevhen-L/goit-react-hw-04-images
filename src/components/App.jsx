@@ -1,106 +1,106 @@
-import { Component } from 'react';
-
+import React, { useState, useEffect, useRef } from 'react';
 import { getImage } from './ServicesApi/Api';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Loader } from './Loader/Loader';
 import { Modal } from './Modal/Modal';
 import { Button } from './Button/Button';
-
 import { StyledAppContainer } from './App.styled';
 
-export class App extends Component {
-  state = {
-    searchQuery: '',
-    images: [],
-    isLoading: false,
-    error: null,
-    page: 1,
-    totalImages: 0,
-    modal: {
-      isModalOpen: false,
-      modalImageUrl: '',
-    },
+export const App = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalImages, setTotalImages] = useState(0);
+  const [modal, setModal] = useState({
+    isModalOpen: false,
+    modalImageUrl: '',
+  });
+
+  const prevSearchQuery = usePrevious(searchQuery);
+  const prevPage = usePrevious(page);
+
+  const handleSearch = query => {
+    setSearchQuery(query);
+    setPage(1);
+    setImages([]);
+    setTotalImages(0);
   };
 
-  handleSearch = query => {
-    this.setState({
-      searchQuery: query,
-      page: 1,
-      images: [],
-      totalImages: 0,
-    });
-  };
-
-  fetchAllImages = async () => {
-    const { searchQuery, page } = this.state;
+  const fetchAllImages = async () => {
+    setIsLoading(true);
 
     try {
-      this.setState({ isLoading: true });
-
       const data = await getImage(searchQuery, page);
       if (!data.hits.length) return;
 
-      this.setState(prevState => ({
-        images: [...prevState.images, ...data.hits],
-        totalImages: data.totalHits,
-      }));
+      setImages(prevImages => [...prevImages, ...data.hits]);
+      setTotalImages(data.totalHits);
     } catch (error) {
-      this.setState({ error: error.message });
+      setError(error.message);
     } finally {
-      this.setState({ isLoading: false });
+      setIsLoading(false);
     }
   };
 
-  async componentDidUpdate(_, prevState) {
-    const { searchQuery, page } = this.state;
-    if (searchQuery !== prevState.searchQuery || page !== prevState.page) {
-      this.fetchAllImages();
-    }
-  }
+  useEffect(() => {
+    const fetchData = async () => {
+      if (
+        searchQuery &&
+        (searchQuery !== prevSearchQuery || page !== prevPage)
+      ) {
+        await fetchAllImages();
+      }
+    };
 
-  openModal = imageUrl => {
-    this.setState({
-      modal: {
-        isModalOpen: true,
-        modalImageUrl: imageUrl,
-      },
+    fetchData();
+  }, [searchQuery, prevSearchQuery, page, prevPage]);
+
+  const openModal = imageUrl => {
+    setModal({
+      isModalOpen: true,
+      modalImageUrl: imageUrl,
     });
   };
 
-  onCloseModal = () => {
-    this.setState({
-      modal: {
-        isModalOpen: false,
-        modalImageUrl: '',
-      },
+  const onCloseModal = () => {
+    setModal({
+      isModalOpen: false,
+      modalImageUrl: '',
     });
   };
 
-  loadMore = () => {
-    this.setState(prev => ({ page: prev.page + 1 }));
+  const loadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  render() {
-    const { images, isLoading, error, modal, totalImages } = this.state;
+  return (
+    <StyledAppContainer>
+      <Searchbar onSearch={handleSearch} />
+      {images.length > 0 && (
+        <ImageGallery images={images} openModal={openModal} />
+      )}
+      <Modal
+        isOpen={modal.isModalOpen}
+        imageUrl={modal.modalImageUrl}
+        onCloseModal={onCloseModal}
+      />
+      {images.length !== totalImages && !isLoading && (
+        <Button onClick={loadMore} />
+      )}
+      {isLoading && <Loader />}
+      {error && <p>{error}</p>}
+    </StyledAppContainer>
+  );
+};
 
-    return (
-      <StyledAppContainer>
-        <Searchbar onSearch={this.handleSearch} />
-        {images.length > 0 && (
-          <ImageGallery images={images} openModal={this.openModal} />
-        )}
-        <Modal
-          isOpen={modal.isModalOpen}
-          imageUrl={modal.modalImageUrl}
-          onCloseModal={this.onCloseModal}
-        />
-        {images.length !== totalImages && !isLoading && (
-          <Button onClick={this.loadMore} />
-        )}
-        {isLoading && <Loader />}
-        {error && <p>{error}</p>}
-      </StyledAppContainer>
-    );
-  }
+// Користувацька функція, що повертає попереднє значення
+function usePrevious(value) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
 }
